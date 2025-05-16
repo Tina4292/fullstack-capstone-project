@@ -8,6 +8,7 @@ const connectToDatabase = require('./models/db');
 const {loadData} = require("./util/import-mongo/index");
 
 const giftRoutes = require("./routes/giftRoutes");
+const searchRoutes = require('./routes/searchRoutes');
 
 const app = express();
 app.use("*",cors());
@@ -23,7 +24,7 @@ connectToDatabase().then(() => {
 app.use(express.json());
 
 app.use("/api/gifts", giftRoutes);
-
+app.use('/api/search', searchRoutes);
 
 const pinoHttp = require('pino-http');
 const logger = require('./logger');
