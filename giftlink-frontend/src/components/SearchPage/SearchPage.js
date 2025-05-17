@@ -6,6 +6,11 @@ import {urlConfig} from '../../config';
 function SearchPage() {
 
     //Task 1: Define state variables for the search query, age range, and search results.
+    const [query, setQuery] = useState('');
+    const [category, setCategory] = useState('');
+    const [condition, setCondition] = useState('');
+    const [ageYears, setAgeYears] = useState(10);
+    const [searchResults, setSearchResults] = useState([]);
     const categories = ['Living', 'Bedroom', 'Bathroom', 'Kitchen', 'Office'];
     const conditions = ['New', 'Like New', 'Older'];
 
@@ -32,11 +37,30 @@ function SearchPage() {
 
 
     // Task 2. Fetch search results from the API based on user inputs.
+    const searchGifts = async () => {
+        try {
+            const params = new URLSearchParams();
+
+            if (query) params.append('name', query);
+            if (category) params.append('category', category);
+            if (condition) params.append('condition', condition);
+            if (ageYears) params.append('age_years', ageYears);
+
+            const url = `${urlConfig.backendUrl}/api/search?${params.toString()}`;
+            console.log('Search URL:', url);
+
+            const response = await fetch(url);
+            const data = await response.json();
+            setSearchResults(data);
+        } catch (error) {
+            console.error('Error fetching search results:', error);
+        }
+    };
 
     const navigate = useNavigate();
 
     const goToDetailsPage = (productId) => {
-        // Task 6. Enable navigation to the details page of a selected gift.
+        navigate(`/detail/${productId}`);
     };
 
 
@@ -49,13 +73,81 @@ function SearchPage() {
                     <div className="filter-section mb-3 p-3 border rounded">
                         <h5>Filters</h5>
                         <div className="d-flex flex-column">
-                            {/* Task 3: Dynamically generate category and condition dropdown options.*/}
-                            {/* Task 4: Implement an age range slider and display the selected value. */}
+                            <label className="mt-2">Category</label>
+                            <select
+                                className="form-select dropdown-filter"
+                                value={category}
+                                onChange={(e) => setCategory(e.target.value)}
+                            >
+                                <option value="">All Categories</option>
+                                {categories.map((cat, index) => (
+                                    <option key={index} value={cat}>{cat}</option>
+                                ))}
+                            </select>
+
+                            <label className="mt-2">Condition</label>
+                            <select
+                                className="form-select dropdown-filter"
+                                value={condition}
+                                onChange={(e) => setCondition(e.target.value)}
+                            >
+                                <option value="">All Conditions</option>
+                                {conditions.map((cond, index) => (
+                                    <option key={index} value={cond}>{cond}</option>
+                                ))}
+                            </select>
+
+                            <label className="mt-3">Max Age: {ageYears} years</label>
+                            <input
+                                type="range"
+                                className="form-range age-range-slider"
+                                min="0"
+                                max="18"
+                                value={ageYears}
+                                onChange={(e) => setAgeYears(e.target.value)}
+                            />
                         </div>
                     </div>
-                    {/* Task 7: Add text input field for search criteria*/}
-                    {/* Task 8: Implement search button with onClick event to trigger search:*/}
-                    {/*Task 5: Display search results and handle empty results with a message. */}
+                    <label className="mt-3">Search by Name</label>
+                    <input
+                        type="text"
+                        className="form-control search-input"
+                        placeholder="Enter gift name"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                    />
+                    <button className="btn btn-primary mt-3 search-button" onClick={searchGifts}>
+                        Search
+                    </button>
+                    <div className="mt-4">
+                    {searchResults.length === 0 ? (
+                        <div className="alert alert-warning text-center">No gifts found.</div>
+                    ) : (
+                        <div className="row">
+                            {searchResults.map((gift) => (
+                                <div
+                                    key={gift.id}
+                                    className="col-md-4 mb-4"
+                                    onClick={() => goToDetailsPage(gift.id)}
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    <div className="card search-results-card">
+                                        {gift.image ? (
+                                            <img src={gift.image} alt={gift.name} className="card-img-top" />
+                                        ) : (
+                                            <div className="no-image-available-large text-center p-4">No Image</div>
+                                        )}
+                                        <div className="card-body">
+                                            <h5 className="card-title">{gift.name}</h5>
+                                            <p className="card-text"><strong>Category:</strong> {gift.category}</p>
+                                            <p className="card-text"><strong>Condition:</strong> {gift.condition}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
                 </div>
             </div>
         </div>
