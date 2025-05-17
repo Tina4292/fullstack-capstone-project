@@ -4,10 +4,44 @@ import './LoginPage.css';
 function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const navigate = useNavigate(); // Task 5
+    const { setIsLoggedIn } = useAppContext(); // Task 5
 
-    const handleLogin = () => {
-        console.log("Login button clicked");
-    };
+    const bearerToken = sessionStorage.getItem('auth-token'); // Task 5
+
+    // Task 6: If already logged in, go to /app
+    if (bearerToken) {
+    navigate('/app');
+    }
+
+    const handleLogin = async () => {
+    try {
+        const response = await fetch(`${urlConfig.backendUrl}/api/auth/login`, {
+        method: 'POST', // Task 7
+        headers: {
+            'Content-Type': 'application/json' // Task 8
+        },
+        body: JSON.stringify({
+            email,
+            password
+        }) // Task 9
+    });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            sessionStorage.setItem('auth-token', data.authtoken); // Task 10
+            sessionStorage.setItem('user-name', data.userName);   // Task 11
+            sessionStorage.setItem('user-email', data.userEmail); // Task 11
+            setIsLoggedIn(true);                                  // Task 12
+            navigate('/app');                                     // Task 13
+        } else {
+            setErrorMessage(data.message || 'Login failed');      // Task 14
+        }
+    } catch (error) {
+        setErrorMessage('An error occurred while logging in');  // Task 15
+    }
+};
 
     return (
         <div className="container mt-5">
@@ -24,6 +58,9 @@ function LoginPage() {
                             <label>Password</label>
                             <input type="password" className="form-control" value={password} onChange={(e) => setPassword(e.target.value)} />
                         </div>
+                        {errorMessage && (
+                            <div className="alert alert-danger mt-2">{errorMessage}</div>
+                        )}
 
                         <button className="btn btn-primary w-100" onClick={handleLogin}>Login</button>
 
