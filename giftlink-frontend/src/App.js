@@ -11,9 +11,9 @@ function App() {
     <>
         <Navbar/>
         <Routes>
-          {/* the final code will not pass the products to every page, but each page will call the server API */}
-          <Route path="/" element={<MainPage />} />
-          <Route path="/app" element={<MainPage />} />
+            {/* the final code will not pass the products to every page, but each page will call the server API */}
+            <Route path="/" element={<div>Welcome to GiftLink!</div>} />
+            <Route path="/main" element={<MainPage />} />
         </Routes>
         </>
   );
