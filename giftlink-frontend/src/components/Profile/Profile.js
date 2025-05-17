@@ -56,40 +56,49 @@ const handleSubmit = async (e) => {
 
   try {
     const authtoken = sessionStorage.getItem("auth-token");
-    const email = sessionStorage.getItem("email");
+    const email = sessionStorage.getItem("user-email");
 
     if (!authtoken || !email) {
       navigate("/app/login");
       return;
     }
 
-    const payload = { ...updatedDetails };
+    // Extract first and last name from updatedDetails.name
+    const [firstName, ...lastParts] = updatedDetails.name.split(" ");
+    const lastName = lastParts.join(" ");
+    const password = updatedDetails.password || ""; // Optional if field is blank
+
     const response = await fetch(`${urlConfig.backendUrl}/api/auth/update`, {
-      //Step 1: Task 1
-      //Step 1: Task 2
-      //Step 1: Task 3
+      method: "PUT", // ✅ Task 1
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${authtoken}`,
+        email: email // ✅ Task 2
+      },
+      body: JSON.stringify({
+        firstName,
+        lastName,
+        password // ✅ Task 3
+      })
     });
 
     if (response.ok) {
-      // Update the user details in session storage
-      //Step 1: Task 4
-      //Step 1: Task 5
-      setUserDetails(updatedDetails);
+      const updatedName = `${firstName} ${lastName}`;
+
+      sessionStorage.setItem("user-name", updatedName); // ✅ Task 4
+      setUserDetails({ ...updatedDetails, name: updatedName }); // ✅ Task 5
       setEditMode(false);
-      // Display success message to the user
       setChanged("Name Changed Successfully!");
+
       setTimeout(() => {
         setChanged("");
         navigate("/");
       }, 1000);
-
     } else {
-      // Handle error case
       throw new Error("Failed to update profile");
     }
   } catch (error) {
-    console.error(error);
-    // Handle error case
+    console.error("Error updating profile:", error.message);
   }
 };
 
@@ -114,6 +123,15 @@ return (
      value={updatedDetails.name}
      onChange={handleInputChange}
    />
+</label>
+<label>
+  Password
+  <input
+    type="password"
+    name="password"
+    value={updatedDetails.password || ""}
+    onChange={handleInputChange}
+  />
 </label>
 
 <button type="submit">Save</button>
