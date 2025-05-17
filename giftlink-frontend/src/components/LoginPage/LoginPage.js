@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
 import './LoginPage.css';
+import { useNavigate } from 'react-router-dom';
+import { useAppContext } from '../../context/AuthContext';
+import { urlConfig } from '../../config';
+
 
 function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate(); // Task 5
     const { setIsLoggedIn } = useAppContext(); // Task 5
+    const [errorMessage, setErrorMessage] = useState('');
 
     const bearerToken = sessionStorage.getItem('auth-token'); // Task 5
 
@@ -58,11 +63,12 @@ function LoginPage() {
                             <label>Password</label>
                             <input type="password" className="form-control" value={password} onChange={(e) => setPassword(e.target.value)} />
                         </div>
+
+                        <button className="btn btn-primary w-100" onClick={handleLogin}>Login</button>
+
                         {errorMessage && (
                             <div className="alert alert-danger mt-2">{errorMessage}</div>
                         )}
-
-                        <button className="btn btn-primary w-100" onClick={handleLogin}>Login</button>
 
                         <p className="mt-4 text-center">
                             New here? <a href="/app/register" className="text-primary">Register</a>
