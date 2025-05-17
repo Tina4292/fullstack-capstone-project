@@ -1,51 +1,49 @@
-
 require('dotenv').config();
 const MongoClient = require('mongodb').MongoClient;
 const fs = require('fs');
+const express = require('express');
 
-// MongoDB connection URL with authentication options
+const app = express();
+const PORT = 3060; // Must match containerPort in deployment.yml
+
 let url = `${process.env.MONGO_URL}`;
 let filename = `${__dirname}/gifts.json`;
 const dbName = 'giftdb';
 const collectionName = 'gifts';
-
-// notice you have to load the array of gifts into the data object
 const data = JSON.parse(fs.readFileSync(filename, 'utf8')).docs;
 
-// connect to database and insert data into the collection
+// Load gift data to MongoDB if not present
 async function loadData() {
     const client = new MongoClient(url);
 
     try {
-        // Connect to the MongoDB client
         await client.connect();
-        console.log("Connected successfully to server");
+        console.log("Connected successfully to MongoDB");
 
-        // database will be created if it does not exist
         const db = client.db(dbName);
-
-        // collection will be created if it does not exist
         const collection = db.collection(collectionName);
-        let cursor = await collection.find({});
-        let documents = await cursor.toArray();
+        const documents = await collection.find({}).toArray();
 
-        if(documents.length == 0) {
-            // Insert data into the collection
+        if (documents.length === 0) {
             const insertResult = await collection.insertMany(data);
-            console.log('Inserted documents:', insertResult.insertedCount);
+            console.log(`Inserted ${insertResult.insertedCount} documents`);
         } else {
-            console.log("Gifts already exists in DB")
+            console.log("Gifts already exist in DB");
         }
     } catch (err) {
-        console.error(err);
+        console.error("Error loading data:", err);
     } finally {
-        // Close the connection
         await client.close();
     }
 }
 
 loadData();
 
-module.exports = {
-    loadData,
-  };
+// Start Express server
+app.get("/", (req, res) => {
+    res.send("Giftlink backend is running!");
+});
+
+app.listen(PORT, () => {
+    console.log(`Server is listening on port ${PORT}`);
+});

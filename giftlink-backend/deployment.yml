@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: giftapp-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: giftapp
+  template:
+    metadata:
+      labels:
+        app: giftapp
+    spec:
+      containers:
+      - name: giftapp
+        image: us.icr.io/sn-labs-tdcoppedge1/giftapp:v3
+        ports:
+        - containerPort: 3060
+        env:
+        - name: MONGO_URL
+          valueFrom:
+            secretKeyRef:
+              name: mongo-secret
+              key: MONGO_URL
+        - name: DATASRC
+          valueFrom:
+            secretKeyRef:
+              name: mongo-secret
+              key: DATASRC
