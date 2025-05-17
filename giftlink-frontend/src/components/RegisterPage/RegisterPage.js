@@ -1,14 +1,45 @@
 import React, { useState } from 'react';
 import './RegisterPage.css';
+import { urlConfig } from '../../config'; // Task 1
+import { useAppContext } from '../../context/AuthContext'; // Task 2
+import { useNavigate } from 'react-router-dom'; // Task 3
 
 function RegisterPage() {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [errorMessage, setErrorMessage] = useState(''); // Task 4
+    const navigate = useNavigate(); // Task 5
+    const { setIsLoggedIn } = useAppContext(); // Task 5
 
-    const handleRegister = () => {
-        console.log("Register button clicked");
+    const handleRegister = async () => {
+        try {
+            const response = await fetch(`${urlConfig.backendUrl}/api/auth/register`, {
+                method: 'POST', // Task 6
+                headers: {
+                    'Content-Type': 'application/json' // Task 7
+                },
+                body: JSON.stringify({
+                    firstName,
+                    lastName,
+                    email,
+                    password
+                }) // Task 8
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                sessionStorage.setItem('auth-token', data.token);
+                setIsLoggedIn(true);
+                navigate('/app');
+            } else {
+                setErrorMessage(data.message || 'Registration failed');
+            }
+        } catch (error) {
+            setErrorMessage('An error occurred while registering');
+        }
     };
 
     return (
@@ -34,6 +65,10 @@ function RegisterPage() {
                             <label>Password</label>
                             <input type="password" className="form-control" value={password} onChange={(e) => setPassword(e.target.value)} />
                         </div>
+
+                        {errorMessage && (
+                        <div className="alert alert-danger mt-2">{errorMessage}</div>
+                        )}
 
                         <button className="btn btn-primary w-100" onClick={handleRegister}>Register</button>
 
